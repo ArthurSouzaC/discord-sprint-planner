@@ -14,7 +14,7 @@ client.once('ready', () => {
 	console.log('Bot is ready!');
 });
 
-client.on('interactionCreate', async interaction => {
+client.on('interactionCreate', interaction => {
 	if (interaction.isCommand()) {
         switch(interaction.commandName) {
             case 'poker': poker.init(interaction); 
@@ -25,11 +25,15 @@ client.on('interactionCreate', async interaction => {
                 break;
         }
     } else if(interaction.isButton()) {
-        await interaction.deferUpdate();
+        interaction.deferUpdate();
 
-        if(interaction.customId == ("low" || "medium" || "high")) await priority.handleVote(interaction)
+        if(interaction.customId == "low" || interaction.customId == "medium" || interaction.customId == "high") priority.handleVote(interaction)
 
-        if(interaction.customId == 'next') await priority.next(interaction);
+        if(interaction.customId == 'next') priority.next(interaction);
+
+        if(interaction.customId == 'end') {
+            priority.finish(interaction)
+        }
     }
 });
 
