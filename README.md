@@ -1,1 +1,1 @@
-# discord-poker-planning
+# discord-sprint-planner
