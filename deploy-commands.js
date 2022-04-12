@@ -6,7 +6,7 @@ const { Routes } = require('discord-api-types/v9');
 
 const clientId = process.env.CLIENT_ID;
 const guildId = process.env.GUILD_ID;
-const token = process.env.DISCORD_BOK_TOKEN;
+const token = process.env.DISCORD_BOT_TOKEN;
 
 const commands = [
 	new SlashCommandBuilder().setName('poker').setDescription('Starts Poker Planning!'),

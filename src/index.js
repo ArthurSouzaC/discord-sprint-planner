@@ -2,7 +2,7 @@ require('dotenv').config();
 
 // Require the necessary discord.js classes
 const { Client, Intents, DiscordAPIError } = require('discord.js');
-const token = process.env.DISCORD_BOK_TOKEN;
+const token = process.env.DISCORD_BOT_TOKEN;
 const guildId = process.env.GUILD_ID;
 
 const { poker, priority } = require('./commands');
