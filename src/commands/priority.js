@@ -3,26 +3,38 @@ const { MessageActionRow, MessageButton } = require("discord.js");
 var usersVotes = [];
 
 module.exports = {
-  init: (interaction) => {
-    interaction.reply("O nosso Priority Planning vai começar!");
-    setTimeout(() => {
-      interaction.channel.send(renderVotingMessage());
-    }, 0);
+  init: async (interaction) => {
+    await interaction.reply(
+      "\n------------------------------------------------------------------------------\n"
+    );
+    await interaction.channel.send("O nosso Priority Planning vai começar!");
+    await interaction.channel.send(
+      "\n------------------------------------------------------------------------------\n"
+    );
+    await interaction.channel.send(
+      renderVotingMessage("Vamos votar a prioridade.")
+    );
   },
 
-  handleVote: (interaction) => {
+  handleVote: async (interaction) => {
     if (
-      usersVotes
-        .map((item) => item.userId)
-        .includes(interaction.member.user.id)
+      usersVotes.map((item) => item.userId).includes(interaction.member.user.id)
     ) {
-      usersVotes[usersVotes.findIndex((item) => item.userId == interaction.member.user.id)].vote = interaction.customId;
+      usersVotes[
+        usersVotes.findIndex(
+          (item) => item.userId == interaction.member.user.id
+        )
+      ].vote = interaction.customId;
       return;
-    };
+    }
 
-    usersVotes.push({ userId: interaction.member.user.id, name: interaction.member.nickname || interaction.member.user.username, vote: interaction.customId });
+    usersVotes.push({
+      userId: interaction.member.user.id,
+      name: interaction.member.nickname || interaction.member.user.username,
+      vote: interaction.customId,
+    });
 
-    return interaction.channel.send(
+    await interaction.channel.send(
       `${
         interaction.member.nickname || interaction.member.user.username
       } já votou`
@@ -30,66 +42,26 @@ module.exports = {
   },
 
   next: async (interaction) => {
-    const fetched = await interaction.channel.messages.fetch();
-    interaction.channel.bulkDelete(fetched);
+    await removeButtons(interaction);
+    await interaction.channel.send(
+      "\n------------------------------------------------------------------------------\n"
+    );
+    await interaction.channel.send("Priority Planning finalizado!");
+    await interaction.channel.send(
+      "\n------------------------------------------------------------------------------\n"
+    );
   },
 
-  finish: (interaction) => {
-    showVotes(interaction);
-    showResult(interaction);
-  }
+  finish: async (interaction) => {
+    await removeButtons(interaction);
+    await showVotes(interaction);
+    await showResult(interaction);
+  },
 };
 
-function createButton(functionality) {
-  let button;
-  
-  switch(functionality) {
-    case 'low':
-      button = new MessageButton()
-        .setCustomId("low")
-        .setLabel("Baixa")
-        .setStyle("SECONDARY")
-        .setEmoji("🟢");
-      break;
-
-    case 'medium':
-      button = new MessageButton()
-        .setCustomId("medium")
-        .setLabel("Média")
-        .setStyle("SECONDARY")
-        .setEmoji("🟡");
-      break;
-
-    case 'high':
-      button = new MessageButton()
-        .setCustomId("high")
-        .setLabel("Alta")
-        .setStyle("SECONDARY")
-        .setEmoji("🔴");
-      break;
-
-    case 'end':
-      button = new MessageButton()
-        .setCustomId("end")
-        .setLabel("Encerrar votação")
-        .setStyle("SUCCESS");
-      break;
-
-    case 'next':
-      button = new MessageButton()
-      .setCustomId("next")
-      .setLabel("Finalizar planning")
-      .setStyle("PRIMARY");
-  }
-
+function renderVotingMessage(message) {
   return {
-    button
-  };
-}
-
-function renderVotingMessage() {
-  return {
-    content: "Vote a dificuldade!",
+    content: message,
     components: [
       new MessageActionRow().addComponents(
         new MessageButton()
@@ -111,11 +83,11 @@ function renderVotingMessage() {
 
       new MessageActionRow().addComponents(
         new MessageButton()
-          .setCustomId("end")
+          .setCustomId("end-pr")
           .setLabel("Encerrar votação")
           .setStyle("SUCCESS"),
         new MessageButton()
-          .setCustomId("next")
+          .setCustomId("next-pr")
           .setLabel("Finalizar planning")
           .setStyle("PRIMARY")
       ),
@@ -123,34 +95,99 @@ function renderVotingMessage() {
   };
 }
 
-function showVotes(interaction) {  
-  usersVotes.forEach(user => {
+async function showVotes(interaction) {
+  usersVotes.forEach(async (user) => {
     let voteMessage;
-    if(user.vote == 'low') voteMessage = '🟢 (prioridade baixa)'
-    if(user.vote == 'medium') voteMessage = '🟡 (prioridade média)'
-    if(user.vote == 'high') voteMessage = '🔴 (prioridade alta)'
+    if (user.vote == "low") voteMessage = "🟢 (prioridade baixa)";
+    if (user.vote == "medium") voteMessage = "🟡 (prioridade média)";
+    if (user.vote == "high") voteMessage = "🔴 (prioridade alta)";
 
-    interaction.channel.send(`${user.name} votou: ${voteMessage}`)
-  })
+    await interaction.channel.send(`${user.name} votou: ${voteMessage}`);
+  });
 }
 
 async function showResult(interaction) {
-  let lowCount = 0, mediumCount = 0, highCount = 0;
-  usersVotes.forEach(user => {
-    if(user.vote == 'low') lowCount++;
-    if(user.vote == 'medium') mediumCount++;
-    if(user.vote == 'high') highCount++;
-  })
+  let lowCount = 0,
+    mediumCount = 0,
+    highCount = 0;
+  usersVotes.forEach((user) => {
+    if (user.vote == "low") lowCount++;
+    if (user.vote == "medium") mediumCount++;
+    if (user.vote == "high") highCount++;
+  });
 
-  if(lowCount > mediumCount && lowCount > highCount)
-    interaction.channel.send(`Resultado final: 🟢 (prioridade baixa)`);
-  if(mediumCount > lowCount && mediumCount > highCount) 
-    interaction.channel.send(`Resultado final: 🟡 (prioridade média)`);
-  if(highCount > lowCount && highCount > mediumCount) 
-    interaction.channel.send(`Resultado final: 🔴 (prioridade alta)`);
-
-  interaction.channel.send("\n------------------------------------------------------------------------------\n");
+  if (lowCount > mediumCount && lowCount > highCount)
+    await interaction.channel.send(`Resultado final: 🟢 (prioridade baixa)`);
+  else if (mediumCount > lowCount && mediumCount > highCount)
+    await interaction.channel.send(`Resultado final: 🟡 (prioridade média)`);
+  else if (highCount > lowCount && highCount > mediumCount)
+    await interaction.channel.send(`Resultado final: 🔴 (prioridade alta)`);
+  else if (highCount == lowCount && highCount != 0)
+    await interaction.channel.send(`Resultado final: 🟡 (prioridade média)`);
+  else if (lowCount == mediumCount || mediumCount == highCount || mediumCount != 0) {
+    usersVotes = [];
+    await interaction.channel.send(
+      "\n------------------------------------------------------------------------------\n"
+    );
+    await interaction.channel.send(
+      renderVotingMessage("Aconteceu um empate! Vamos votar novamente.")
+    );
+    return;
+  }
 
   usersVotes = [];
-  interaction.channel.send(renderVotingMessage());
+  await interaction.channel.send(
+    "\n------------------------------------------------------------------------------\n"
+  );
+  await interaction.channel.send(renderVotingMessage("Vamos votar a prioridade."));
+}
+
+async function removeButtons(interaction) {
+  const fetched = await interaction.channel.messages.fetch({ limit : 10 });
+  fetched.forEach(async (item) => {
+    if (item.components.length)
+      await item.edit({
+        components: [
+          new MessageActionRow().addComponents(
+            new MessageButton()
+              .setCustomId("low")
+              .setLabel("Baixa")
+              .setStyle("SECONDARY")
+              .setEmoji("🟢")
+              .setDisabled(true),
+            new MessageButton()
+              .setCustomId("medium")
+              .setLabel("Média")
+              .setStyle("SECONDARY")
+              .setEmoji("🟡")
+              .setDisabled(true),
+            new MessageButton()
+              .setCustomId("high")
+              .setLabel("Alta")
+              .setStyle("SECONDARY")
+              .setEmoji("🔴")
+              .setDisabled(true)
+          ),
+
+          new MessageActionRow().addComponents(
+            new MessageButton()
+              .setCustomId("end-pr")
+              .setLabel("Encerrar votação")
+              .setStyle("SUCCESS")
+              .setDisabled(true),
+            new MessageButton()
+              .setCustomId("next-pr")
+              .setLabel("Finalizar planning")
+              .setStyle("PRIMARY")
+              .setDisabled(true)
+          ),
+        ],
+      });
+  });
+}
+
+async function timer(ms) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => resolve(), ms);
+  })
 }
