@@ -129,7 +129,7 @@ async function showResult(interaction) {
       "\n------------------------------------------------------------------------------\n"
     );
     await interaction.channel.send(
-      renderVotingMessage("Aconteceu um empate! Vamos votar novamente.")
+      await renderVotingMessage("Aconteceu um empate! Vamos votar novamente.")
     );
     return;
   } else if(positionInArray.highest == positionInArray.lowest) {
