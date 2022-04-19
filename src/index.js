@@ -17,13 +17,7 @@ client.once("ready", () => {
 });
 
 client.on("interactionCreate", async (interaction) => {
-  const fetched = await interaction.channel.messages.fetch({ limit: 100 });
-  console.log(fetched);
-  // await interaction.reply("Canal limpo.");
-  // await interaction.channel.bulkDelete(fetched);
-  
   if (interaction.isCommand()) {
-    
     switch (interaction.commandName) {
       case "poker":
         poker.init(interaction);
@@ -57,7 +51,9 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 async function clearChannel(interaction) {
-  
+  const fetched = await interaction.channel.messages.fetch({ limit: 100 });
+  await interaction.reply("Canal limpo.");
+  await interaction.channel.bulkDelete(fetched);
 }
 
 client.login(token);
