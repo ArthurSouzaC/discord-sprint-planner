@@ -1,4 +1,6 @@
 require("dotenv").config();
+const express = require('express');
+const app = express();
 
 // Require the necessary discord.js classes
 const { Client, Intents } = require("discord.js");
@@ -55,3 +57,7 @@ async function clearChannel(interaction) {
 }
 
 client.login(token);
+app.use('/', (req, res) => {
+  res.send('Bot is online!')
+})
+app.listen(process.env.PORT);
