@@ -52,8 +52,9 @@ client.on("interactionCreate", async (interaction) => {
 
 async function clearChannel(interaction) {
   const fetched = await interaction.channel.messages.fetch({ limit: 100 });
-  await interaction.reply("Canal limpo.");
+  fetched.filter(message => message.author.id == '961620203752538153')
   await interaction.channel.bulkDelete(fetched);
+  await interaction.reply("Canal limpo.");
 }
 
 client.login(token);
