@@ -6,7 +6,7 @@
   "author": "ArthurSouzaC <arthursouza.info@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon",
+    "start": "node src/index.js",
     "deploy-commands": "node deploy-commands.js"
   },
   "dependencies": {
