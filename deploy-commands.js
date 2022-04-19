@@ -15,6 +15,9 @@ const commands = [
   new SlashCommandBuilder()
     .setName("priority")
     .setDescription("Starts Priority Planning!"),
+  new SlashCommandBuilder()
+    .setName("clear")
+    .setDescription("Clear chat!")
 ].map((command) => command.toJSON());
 
 const rest = new REST({ version: "9" }).setToken(token);
