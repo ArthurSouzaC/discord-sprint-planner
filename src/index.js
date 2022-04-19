@@ -42,9 +42,9 @@ client.on("interactionCreate", async (interaction) => {
     if (interaction.customId == "end-pr") priority.finish(interaction);
     if (interaction.customId == "next-pk") poker.next(interaction);
     if (interaction.customId == "end-pk") poker.finish(interaction);
-  } else if(interaction.isSelectMenu()) {
+  } else if (interaction.isSelectMenu()) {
     interaction.deferUpdate();
-    poker.handleVote(interaction)
+    poker.handleVote(interaction);
   }
 });
 

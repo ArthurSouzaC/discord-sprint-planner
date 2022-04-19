@@ -1,15 +1,15 @@
 const { MessageActionRow, MessageButton } = require("discord.js");
 
 var usersVotes = [];
+let userMain = "";
 
 module.exports = {
   init: async (interaction) => {
-    await interaction.reply(
-      "\n------------------------------------------------------------------------------\n"
-    );
+    userMain = interaction.member.user.id;
+    await interaction.reply("\n────────────────────────────────────────\n");
     await interaction.channel.send("O nosso Priority Planning vai começar!");
     await interaction.channel.send(
-      "\n------------------------------------------------------------------------------\n"
+      "\n────────────────────────────────────────\n"
     );
     await interaction.channel.send(
       renderVotingMessage("Vamos votar a prioridade.")
@@ -34,25 +34,23 @@ module.exports = {
       vote: interaction.customId,
     });
 
-    await interaction.channel.send(
-      `${
-        interaction.member.nickname || interaction.member.user.username
-      } já votou`
-    );
+    await interaction.channel.send(`<@${interaction.member.user.id}> já votou`);
   },
 
   next: async (interaction) => {
+    if (userMain != interaction.member.user.id) return;
     await removeButtons(interaction);
     await interaction.channel.send(
-      "\n------------------------------------------------------------------------------\n"
+      "\n────────────────────────────────────────\n"
     );
     await interaction.channel.send("Priority Planning finalizado!");
     await interaction.channel.send(
-      "\n------------------------------------------------------------------------------\n"
+      "\n────────────────────────────────────────\n"
     );
   },
 
   finish: async (interaction) => {
+    if (userMain != interaction.member.user.id) return;
     await removeButtons(interaction);
     await showVotes(interaction);
     await showResult(interaction);
@@ -98,11 +96,22 @@ function renderVotingMessage(message) {
 async function showVotes(interaction) {
   usersVotes.forEach(async (user) => {
     let voteMessage;
-    if (user.vote == "low") voteMessage = "🟢 (prioridade baixa)";
-    if (user.vote == "medium") voteMessage = "🟡 (prioridade média)";
-    if (user.vote == "high") voteMessage = "🔴 (prioridade alta)";
 
-    await interaction.channel.send(`${user.name} votou: ${voteMessage}`);
+    switch (user.vote) {
+      case "low":
+        voteMessage = "🟢 (prioridade baixa)";
+        break;
+      case "medium":
+        voteMessage = "🟡 (prioridade média)";
+        break;
+      case "high":
+        voteMessage = "🔴 (prioridade alta)";
+        break;
+      default:
+        voteMessage = "🟡 (prioridade média)";
+    }
+
+    await interaction.channel.send(`<@${user.userId}> votou: ${voteMessage}`);
   });
 }
 
@@ -110,40 +119,78 @@ async function showResult(interaction) {
   let lowCount = 0,
     mediumCount = 0,
     highCount = 0;
+
   usersVotes.forEach((user) => {
-    if (user.vote == "low") lowCount++;
-    if (user.vote == "medium") mediumCount++;
-    if (user.vote == "high") highCount++;
+    switch (user.vote) {
+      case "low":
+        lowCount++;
+        break;
+      case "medium":
+        mediumCount++;
+        break;
+      case "high":
+        highCount++;
+        break;
+      default:
+        voteMessage = mediumCount++;
+    }
   });
 
   if (lowCount > mediumCount && lowCount > highCount)
-    await interaction.channel.send(`Resultado final: 🟢 (prioridade baixa)`);
+    await interaction.channel.send(
+      `**Resultado final: 🟢 (prioridade baixa)**`
+    );
   else if (mediumCount > lowCount && mediumCount > highCount)
-    await interaction.channel.send(`Resultado final: 🟡 (prioridade média)`);
+    await interaction.channel.send(
+      `**Resultado final: 🟡 (prioridade média)**`
+    );
   else if (highCount > lowCount && highCount > mediumCount)
-    await interaction.channel.send(`Resultado final: 🔴 (prioridade alta)`);
+    await interaction.channel.send(`**Resultado final: 🔴 (prioridade alta)**`);
   else if (highCount == lowCount && highCount != 0)
-    await interaction.channel.send(`Resultado final: 🟡 (prioridade média)`);
-  else if (lowCount == mediumCount || mediumCount == highCount || mediumCount != 0) {
+    await interaction.channel.send(
+      `**Resultado final: 🟡 (prioridade média)**`
+    );
+  else if (
+    lowCount == mediumCount ||
+    mediumCount == highCount ||
+    mediumCount != 0
+  ) {
+    const selectedVoters = [];
+    await interaction.channel.send(
+      "\n────────────────────────────────────────\n"
+    );
+
+    if (lowCount == mediumCount) {
+      selectedVoters = chooseUser(["low", "medium"]);
+      await interaction.channel.send(
+        renderVotingMessage(
+          `Aconteceu um empate entre 🟢 e 🟡! <@${selectedVoters[0]}> e <@${selectedVoters[1]}>, justifiquem o seu voto e todos votem novamente!`
+        )
+      );
+    } else if (mediumCount == highCount) {
+      selectedVoters = chooseUser(["medium", "high"]);
+      await interaction.channel.send(
+        renderVotingMessage(
+          `Aconteceu um empate entre 🟡 e 🔴! <@${selectedVoters[0]}> e <@${selectedVoters[1]}>, justifiquem o seu voto e todos votem novamente!`
+        )
+      );
+    }
+
     usersVotes = [];
-    await interaction.channel.send(
-      "\n------------------------------------------------------------------------------\n"
-    );
-    await interaction.channel.send(
-      renderVotingMessage("Aconteceu um empate! Vamos votar novamente.")
-    );
     return;
   }
 
   usersVotes = [];
   await interaction.channel.send(
-    "\n------------------------------------------------------------------------------\n"
+    "\n────────────────────────────────────────\n"
   );
-  await interaction.channel.send(renderVotingMessage("Vamos votar a prioridade."));
+  await interaction.channel.send(
+    renderVotingMessage("Vamos votar a prioridade.")
+  );
 }
 
 async function removeButtons(interaction) {
-  const fetched = await interaction.channel.messages.fetch({ limit : 10 });
+  const fetched = await interaction.channel.messages.fetch({ limit: 10 });
   fetched.forEach(async (item) => {
     if (item.components.length)
       await item.edit({
@@ -186,8 +233,17 @@ async function removeButtons(interaction) {
   });
 }
 
-async function timer(ms) {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => resolve(), ms);
-  })
+function chooseUser(votes) {
+  const voters = [[], []];
+  const selectedVoters = [];
+  usersVotes.forEach((vote) => {
+    if (vote.vote == votes[0]) voters[0].push(vote.userId);
+    if (vote.vote == votes[1]) voters[1].push(vote.userId);
+  });
+  voters.forEach((_voters) => {
+    const index = Math.floor(Math.random() * _voters.length);
+    selectedVoters.push(_voters[index]);
+  });
+
+  return selectedVoters;
 }
