@@ -136,26 +136,26 @@ async function showResult(interaction) {
     }
   });
 
-  if (lowCount > mediumCount && lowCount > highCount)
+  if (lowCount > mediumCount && lowCount > highCount) {
     await interaction.channel.send(
       `**Resultado final: 🟢 (prioridade baixa)**`
     );
-  else if (mediumCount > lowCount && mediumCount > highCount)
+  } else if (mediumCount > lowCount && mediumCount > highCount) {
     await interaction.channel.send(
       `**Resultado final: 🟡 (prioridade média)**`
     );
-  else if (highCount > lowCount && highCount > mediumCount)
+  } else if (highCount > lowCount && highCount > mediumCount)
     await interaction.channel.send(`**Resultado final: 🔴 (prioridade alta)**`);
-  else if (highCount == lowCount && highCount != 0)
+  else if (highCount == lowCount && highCount != 0) {
     await interaction.channel.send(
       `**Resultado final: 🟡 (prioridade média)**`
     );
-  else if (
+  } else if (
     lowCount == mediumCount ||
     mediumCount == highCount ||
     mediumCount != 0
   ) {
-    const selectedVoters = [];
+    let selectedVoters = [];
     await interaction.channel.send(
       "\n────────────────────────────────────────\n"
     );
@@ -235,7 +235,7 @@ async function removeButtons(interaction) {
 
 function chooseUser(votes) {
   const voters = [[], []];
-  const selectedVoters = [];
+  let selectedVoters = [];
   usersVotes.forEach((vote) => {
     if (vote.vote == votes[0]) voters[0].push(vote.userId);
     if (vote.vote == votes[1]) voters[1].push(vote.userId);
@@ -246,4 +246,10 @@ function chooseUser(votes) {
   });
 
   return selectedVoters;
+}
+
+async function timer(ms) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => resolve(), ms);
+  });
 }

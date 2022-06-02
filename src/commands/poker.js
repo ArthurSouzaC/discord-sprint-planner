@@ -148,7 +148,7 @@ async function showResult(interaction) {
     );
     await interaction.channel.send(
       await renderVotingMessage(
-        `Aconteceu um empate entre ${lowest} e ${highest}! <@${selectedVoters[1]}> e <@${selectedVoters[0]}>, justifiquem o seu voto e todos votem novamente!`
+        `Aconteceu uma divergência entre ${lowest} e ${highest}! <@${selectedVoters[1]}> e <@${selectedVoters[0]}>, justifiquem o seu voto e todos votem novamente!`
       )
     );
     usersVotes = [];
@@ -209,7 +209,7 @@ async function removeButtons(interaction) {
 
 function chooseUser(votes) {
   const voters = [[], []];
-  const selectedVoters = [];
+  let selectedVoters = [];
 
   usersVotes.forEach((vote) => {
     vote.vote == votes[0] && voters[0].push(vote.userId);
@@ -222,4 +222,10 @@ function chooseUser(votes) {
   });
 
   return selectedVoters;
+}
+
+async function timer(ms) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => resolve(), ms);
+  });
 }
